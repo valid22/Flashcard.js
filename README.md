@@ -1,5 +1,23 @@
 # flashcard
 
+Vue.js UI frontend for Flashcard app API.
+
+# App Status
+
+- [x] Login UI
+- [x] Login API
+- [x] Dashboard UI
+- [x] Dashboard report API
+- [x] Deck UI
+- [x] Deck CRUD API
+- [x] Card UI
+- [x] Card CRUD API
+- [ ] Review UI
+- [ ] Review API
+- [ ] Export Job
+- [ ] Reporting Job
+- [ ] Alert Job
+- [ ] Cache
 ## Project setup
 ```
 npm install
@@ -14,11 +32,3 @@ npm run serve
 ```
 npm run build
 ```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
