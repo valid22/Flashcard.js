@@ -54,6 +54,11 @@ export default {
                 Vue.set(state.user_decks, index, {...state.user_decks[index], title: attrs.deck_title})
             }
         },
+
+        addCard(state, {deck_id, ...card}) {
+            let deck = state.deck_data[deck_id]
+            deck.cards.push(card)
+        }
     },
 
     actions: {
@@ -106,14 +111,23 @@ export default {
         },
 
         async update_card({commit, state}, {deck_id, card_id, card_front, card_back}) {
-            let deck = {...state.deck_data[deck_id]}
-            let cards = deck.map((c) => {
+            let deck = state.deck_data[deck_id]
+            let cards = deck.cards.map((c) => {
                 return c.card_id == card_id ? {
                     card_id, card_front, card_back
                 } : c
             })
             
             commit('updateDeck', {deck_id, cards})
+        },
+
+        async delete_card({commit, state}, {deck_id, card_id}) {
+            let deck = state.deck_data[deck_id]
+            let cards = deck.cards.filter((c) => {
+                return c.card_id != card_id
+            })
+
+            commit("updateDeck", {deck_id, cards})
         }
     }
 }

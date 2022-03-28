@@ -14,7 +14,53 @@
                         v-model="selected"
                     >
                         <template #header>
-                            <vs-input v-model="search" border placeholder="Search"/>
+                            <div class="grid">
+                                <vs-row>
+                                    <vs-input v-model="search" border placeholder="Search"/>
+                                </vs-row>
+                                
+                                <vs-row style="padding-top: 10px" justify="center">
+                                    <vs-button-group>
+                                        <vs-button
+                                            flat
+                                            style="min-width: 70px"
+                                            animation-type="scale"
+                                            @click="add_card_dialogue=!add_card_dialogue"
+                                        >
+                                            <i class='bx bx-plus' ></i>
+                                            <template #animate >
+                                            Add card
+                                            </template>
+                                        </vs-button>
+                                        <vs-button
+                                            gradient
+                                            style="min-width: 60px"
+                                            success
+                                            animation-type="scale"
+                                            :loading="export_load"
+                                            @click="export_card"
+                                        >
+                                            <i class='bx bx-export' ></i>
+                                            <template #animate >
+                                            Export
+                                            </template>
+                                        </vs-button>
+                                        <vs-button
+                                            gradient
+                                            style="min-width: 60px"
+                                            primary
+                                            disabled
+                                            animation-type="scale"
+                                            @click="import_card"
+                                        >
+                                            <i class='bx bx-import' ></i>
+                                            <template #animate >
+                                            Import
+                                            </template>
+                                        </vs-button>
+                                    </vs-button-group>
+                                </vs-row>
+                            </div>
                         </template>
                         <template #thead>
                             <vs-tr>
@@ -68,6 +114,37 @@
                 </vs-col>
             </vs-row>
         </div>
+        <vs-dialog not-center v-model="add_card_dialogue" :loading="add_card_loading">
+            <template #header>
+            <h4 class="not-margin">
+                Add a new card
+            </h4>
+            </template>
+
+
+            <div class="con-content">
+                <vs-input v-model="new_card.front" label-placeholder="Card Front" style="padding-bottom: 25px"></vs-input>
+                <vs-input v-model="new_card.back" label-placeholder="Card Back" style="padding-bottom: 10px"></vs-input>
+
+                <vs-alert relief color="danger" style="padding-top: 10px">
+                    <template #icon>
+                        <i class='bx bxs-info-circle'></i>
+                    </template>
+                    Any HTML tags in card front & back will not be rendered.
+                </vs-alert>
+            </div>
+
+            <template #footer>
+            <div class="con-footer">
+                <vs-button @click="add_card" primary>
+                Submit
+                </vs-button>
+                <vs-button @click="new_card.front = new_card.back = ''; add_card_dialogue = false;" danger>
+                Cancel
+                </vs-button>
+            </div>
+            </template>
+        </vs-dialog>
     </div>
 </template>
 
@@ -80,16 +157,23 @@ export default {
         return {
             deck_id: this.$route.params.deck_id,
             loaded: false,
+            export_load: false,
             cards: [],
             search: '',
             selected: [],
             allCheck: false,
-            page: 1,
+            page_: 1,
             max: 10,
             active: 0,
             disabled: {
 
             },
+            add_card_dialogue: false,
+            add_card_loading: false,
+            new_card: {
+                front: '',
+                back: '',
+            }
         }
     },
 
@@ -97,6 +181,17 @@ export default {
         deck() {
             return this.$store.state.deck.deck_data[this.deck_id]
         },
+
+        page: {
+            set(p) {
+                this.page_ = p
+                this.selected.length = 0
+            },
+
+            get() {
+                return this.page_
+            },
+        }
     },
 
     watch: {
@@ -121,8 +216,31 @@ export default {
 
             btn.disabled = true
 
+            try {
+                await cardAPI.delete_card(this.deck.deck_id, {
+                    card_id,
+                })
+
+                this.$store.dispatch('deck/delete_card', {deck_id: this.deck.deck_id, card_id})
+                this.selected = this.selected.filter((i) => {
+                    i != card_id
+                })
+            } catch(err) {
+                this.$vs.notification({
+                    flat: false,
+                    color: 'danger',
+                    duration: 60000,
+                    sticky: true,
+                    icon: "<i class='bx bx-error' ></i>",
+                    position: "top-right",
+                    title: 'Card delete failed',
+                    text: `Unable to remove the card id: <b>${card_id}</b>, please try again`
+                })
+            }
+
             btn.disabled = false
             loading.close()
+
         },
 
         async edit_card(card_id) {
@@ -142,7 +260,10 @@ export default {
                 })
 
                 const card = res.data.data
-                this.$store.commit('deck/update_card', {deck_id: this.deck.deck_id, ...card})
+                this.$store.dispatch('deck/update_card', {deck_id: this.deck.deck_id, ...card})
+                this.selected = this.selected.filter((i) => {
+                    i != card_id
+                })
             } catch(err) {
                 this.$vs.notification({
                     flat: false,
@@ -158,7 +279,80 @@ export default {
 
             btn.disabled = false
             loading.close()
-        }
+        },
+
+        async add_card() {
+            this.add_card_loading = true
+            
+            try {
+                const res = await cardAPI.add_card(this.deck.deck_id, {
+                    card_front: this.new_card.front,
+                    card_back: this.new_card.back,
+                })
+
+                const card = res.data.data
+                this.$store.commit('deck/addCard', {deck_id: this.deck.deck_id, ...card})
+
+                this.new_card.front = this.new_card.back = ''
+                this.add_card_dialogue = false
+                this.$vs.notification({
+                    flat: false,
+                    color: 'success',
+                    duration: 60000,
+                    sticky: true,
+                    icon: "<i class='bx bx-check' ></i>",
+                    position: "top-right",
+                    title: 'Card added',
+                    text: `Card ID: ${card.card_id} addedd successfully`
+                })
+            } catch(err) {
+                this.$vs.notification({
+                    flat: false,
+                    color: 'danger',
+                    duration: 60000,
+                    icon: "<i class='bx bx-error' ></i>",
+                    position: "top-right",
+                    title: 'Add card failed',
+                    text: `Unable to add the card to the deck, please try again`
+                })
+            }
+
+            this.add_card_loading = false
+        },
+
+        async export_card() {
+            this.export_load = true
+            
+            try {
+                await cardAPI.export_cards(this.deck_id)
+                this.$vs.notification({
+                    flat: false,
+                    color: 'success',
+                    duration: 60000,
+                    sticky: true,
+                    icon: "<i class='bx bx-loader' ></i>",
+                    position: "top-right",
+                    title: 'Export initiated',
+                    text: `Export process has started. You will receive a mail with exported deck once done`
+                })
+            } catch(err) {
+                this.$vs.notification({
+                    flat: false,
+                    color: 'danger',
+                    duration: 60000,
+                    icon: "<i class='bx bx-error' ></i>",
+                    position: "top-right",
+                    title: 'Export error',
+                    text: `Unable to initiate export process, please try again`
+                })
+            }
+
+            this.export_load = false
+        },
+
+        async import_card() {
+
+        },
     },
 
     async mounted () {
@@ -166,7 +360,22 @@ export default {
             target: this.$refs.dashcards,
         })
 
-        await this.$store.dispatch('deck/fetch_deck_cards', this.deck_id)
+        try {
+            await this.$store.dispatch('deck/fetch_deck_cards', this.deck_id)
+        } catch(err) {
+            this.$vs.notification({
+                flat: true,
+                color: 'danger',
+                sticky: true,
+                icon: "<i class='bx bx-error' ></i>",
+                position: "top-right",
+                title: 'Deck not found',
+                text: `Unable to load the deck with Deck ID: <b>${this.deck_id}</b>`
+            })
+
+            load.close()
+            return 
+        }
         this.$emit("updateHeader", {text: `Deck ${this.deck.deck_title}`})
         document.title = this.deck.deck_title + " cards"
 
@@ -237,6 +446,22 @@ p {
     padding-left: 8px;
 }
 
+.con-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.con-content {
+    justify-content: space-between;
+    width: 100%;
+}
+
+.not-margin {
+    margin: 0;
+    font-weight: 400;
+    padding: 10px 10px 0;
+}
 </style>
 
 <style lang="stylus">

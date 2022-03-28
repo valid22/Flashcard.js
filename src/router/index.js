@@ -52,7 +52,20 @@ const routes = [
         meta: {
           title: 'Cards Dashboard'
         }
-      }
+      },
+      {
+        path: '/review/:deck_id',
+        name: 'dash.review',
+        component: () => import(/* webpackChunkName: "DeckView" */ '@/views/Dashboard/ReviewView.vue'),
+        meta: {
+          title: 'Cards Review'
+        }
+      },
+      {
+        path: '/review',
+        redirect: '/dashboard/deck'
+      },
+
     ],
     meta: {
       auth: true,

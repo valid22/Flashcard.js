@@ -28,18 +28,6 @@
           </template>
           Review Cards
         </vs-sidebar-item>
-        <vs-sidebar-item id="dash.export">
-          <template #icon>
-            <i class='bx bx-export'></i>
-          </template>
-          Export Cards
-        </vs-sidebar-item>
-        <vs-sidebar-item id="dash.account">
-          <template #icon>
-            <i class='bx bx-user'></i>
-          </template>
-          My Account
-        </vs-sidebar-item>
         
         <template #footer>
           <vs-button
@@ -55,12 +43,6 @@
               Sign out
             </template>
           </vs-button>
-          <vs-avatar badge-color="danger" badge-position="top-right">
-            <i class='bx bx-bell' ></i>
-            <template #badge>
-              &nbsp;
-            </template>
-          </vs-avatar>
           <span class="toggle-btn">
             <ThemeToggle />
           </span>

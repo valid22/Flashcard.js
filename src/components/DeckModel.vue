@@ -10,8 +10,8 @@
             <template #text>
                 <p><b>Last review</b> <span class="chip">{{deck.last_reviewed_on}}</span></p>
                 <p><b>Created</b><span class="chip">{{deck.created_on}}</span></p>
-                 <vs-button gradient @click="view_cards">
-                     View cards
+                 <vs-button gradient @click="review_Card">
+                     Review Card
                  </vs-button>
             </template>
             <template #interactions>
@@ -126,6 +126,15 @@ export default {
         async view_cards() {
             this.$router.push({
                 name: 'dash.cards',
+                params: {
+                    deck_id: this.deck.deck_id,
+                }
+            })
+        },
+
+        async review_Card() {
+            this.$router.push({
+                name: 'dash.review',
                 params: {
                     deck_id: this.deck.deck_id,
                 }

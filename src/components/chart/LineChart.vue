@@ -17,6 +17,7 @@ export default {
   methods: {
       renderChart() {
             const ctx = this.$refs.chart.getContext("2d");
+            console.log("data", this.chartData)
             this.chart = new Chart(ctx, {
                 type: 'line',
                 data: this.chartData,

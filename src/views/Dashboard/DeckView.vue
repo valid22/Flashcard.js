@@ -32,8 +32,9 @@ export default {
         const load = this.$vs.loading({
             target: this.$refs.dashdeck,
         })
-
+    
         await this.$store.dispatch('deck/fetch_user_deck_data')
+        
         this.deck_loaded = true
         load.close()
     },
