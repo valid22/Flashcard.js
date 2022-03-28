@@ -12,12 +12,12 @@ Vue.js UI frontend for Flashcard app API.
 - [x] Deck CRUD API
 - [x] Card UI
 - [x] Card CRUD API
-- [ ] Review UI
-- [ ] Review API
-- [ ] Export Job
-- [ ] Reporting Job
-- [ ] Alert Job
-- [ ] Cache
+- [x] Review UI
+- [x] Review API
+- [x] Export Job
+- [x] Reporting Job
+- [x] Alert Job
+- [x] Cache
 ## Project setup
 ```
 npm install
